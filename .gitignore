@@ -1,0 +1,15 @@
+# Claude Code local
+.claude/
+
+# Scratch
+claude_code_scratch_pad/
+
+# OS
+.DS_Store
+*.swp
+*.swo
+
+# Secrets
+*.pem
+*.key
+.env

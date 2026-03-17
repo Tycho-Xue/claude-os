@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(which *)",
+      "Bash(echo *)",
+      "Bash(pwd)"
+    ]
+  },
+  "hooks": {
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "(cd ~/claude_config && git fetch origin && git rebase origin/main && git add -A && git diff --cached --quiet || git commit -m \"auto-sync $(date +%Y-%m-%d-%H%M)\" && git push 2>/dev/null) &"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh"
+  }
+}

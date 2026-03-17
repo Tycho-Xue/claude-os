@@ -1,0 +1,55 @@
+# ~/.shell_common — shared config for bash and zsh
+# Both shells source this file, maintain only one copy
+
+# ---- Clean inherited env ----
+# Prevent Claude Code env vars from leaking into tmux sessions via SSH
+unset CLAUDECODE CLAUDE_CODE_OAUTH_TOKEN 2>/dev/null
+
+# ---- Colors ----
+export COLORTERM=truecolor
+export CLICOLOR=1
+export LSCOLORS=GxFxCxDxBxegedabagaced
+# Linux: dircolors sets LS_COLORS for rich file type colors
+if command -v dircolors &>/dev/null; then
+    eval "$(dircolors -b)"
+fi
+
+# ---- Aliases ----
+alias ls='ls --color=auto'   # Linux; macOS uses CLICOLOR
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+alias grep='grep --color=auto'
+alias ssh='TERM=xterm-256color ssh'
+
+# ---- PATH ----
+[[ -d "$HOME/bin" ]] && export PATH="$HOME/bin:$PATH"
+[[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
+
+# ---- Conda ----
+if [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
+    . "$HOME/miniconda3/etc/profile.d/conda.sh"
+elif [ -f "$HOME/anaconda3/etc/profile.d/conda.sh" ]; then
+    . "$HOME/anaconda3/etc/profile.d/conda.sh"
+elif [ -f "/opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh" ]; then
+    . "/opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh"
+fi
+
+# ---- Zoxide (smart cd) ----
+if command -v zoxide &>/dev/null; then
+    if [ -n "$ZSH_VERSION" ]; then
+        eval "$(zoxide init zsh)"
+    elif [ -n "$BASH_VERSION" ]; then
+        eval "$(zoxide init bash)"
+    fi
+fi
+
+# ---- Yazi (file manager, cd on quit) ----
+function y() {
+    local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+    yazi "$@" --cwd-file="$tmp"
+    if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+        builtin cd -- "$cwd"
+    fi
+    rm -f -- "$tmp"
+}
