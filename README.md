@@ -17,6 +17,9 @@ Claude Code starts every session with zero context. You re-explain your project,
 
 ## Quick Start
 
+**Easiest way**: Copy the [bootstrap prompt](BOOTSTRAP.md) and paste it into Claude Code. It handles everything — fork, install, configure, and explains how the system works.
+
+**Manual setup**:
 ```bash
 # 1. Fork and clone (you need your own repo for multi-machine sync)
 gh repo fork Tycho-Xue/claude-os ~/claude_config --clone
