@@ -18,10 +18,11 @@ Claude Code starts every session with zero context. You re-explain your project,
 ## Quick Start
 
 ```bash
-# 1. Clone (or fork) to ~/claude_config
-git clone https://github.com/{{your-username}}/claude-os.git ~/claude_config
+# 1. Fork and clone (you need your own repo for multi-machine sync)
+gh repo fork Tycho-Xue/claude-os ~/claude_config --clone
+# Or manually: fork on GitHub, then: git clone https://github.com/<you>/claude-os.git ~/claude_config
 
-# 2. Run install script (creates symlinks)
+# 2. Run install script (creates symlinks, detects your terminal)
 bash ~/claude_config/dotfiles/install.sh
 
 # 3. Customize CLAUDE.md — fill in the {{placeholders}} with your info
@@ -110,6 +111,59 @@ These ship as defaults because they make Claude Code significantly more effectiv
 | **Scratch pad for temp code** | `claude_code_scratch_pad/` keeps experiments out of your project. |
 | **Long commands to clipboard** | `echo '...' \| pbcopy` — easier than copy-pasting from terminal output. |
 
+## What Ships by Default
+
+The repo includes opinionated dotfiles that are symlinked on install (Mac only; VMs use inline configs via `vm-bootstrap.sh`). Here's everything that gets installed and why.
+
+### Shell (zsh)
+- **History**: 10,000 entries, shared across terminals, deduplicated
+- **Aliases**: `ll`, `la`, `l`, colorized `ls`/`grep`
+- **Tool integrations**: [zoxide](https://github.com/ajeetdsouza/zoxide) (smart `cd`), [yazi](https://github.com/sxyazi/yazi) (file manager via `y`), [starship](https://starship.rs) prompt, conda auto-init
+- **Plugins**: zsh-syntax-highlighting, zsh-autosuggestions (install via `brew install zsh-syntax-highlighting zsh-autosuggestions`)
+
+### tmux
+- **Prefix**: `Ctrl+A` (instead of default `Ctrl+B` — easier to reach)
+- **Mouse scrolling**: enabled
+- **Status bar**: dark background, green highlight on active window, time + date on right
+- **Security**: auto-unsets Claude Code env vars to prevent token leakage into child sessions
+
+### Vim
+- Dark background, 4-space tabs, expandtab, smartindent
+
+### Terminal Keybindings
+
+These keybindings let you drive tmux from your terminal emulator using familiar shortcuts. They work by sending tmux prefix sequences (hex codes).
+
+| Shortcut | Action | Hex Codes |
+|----------|--------|-----------|
+| `Cmd+Alt+Left` | tmux: previous window | `0x01 0x70` |
+| `Cmd+Alt+Right` | tmux: next window | `0x01 0x6e` |
+| `Cmd+1` – `Cmd+5` | tmux: go to window 1–5 | `0x01 0x31`–`0x35` |
+| `Cmd+S` | tmux: choose session | `0x01 0x73` |
+| `Cmd+Z` | tmux: zoom pane | `0x01 0x7a` |
+| `Cmd+D` | Split right | native terminal split |
+| `Cmd+Shift+D` | Split down | native terminal split |
+| `Ctrl+Shift+Arrow` | Navigate splits | native terminal split |
+| `Cmd+Shift+Enter` | Toggle split zoom | native terminal split |
+| `` Ctrl+` `` | Quick terminal (dropdown) | native terminal feature |
+
+**Ghostty**: Pre-configured in `dotfiles/ghostty/config`, symlinked automatically.
+
+**iTerm2**: Needs manual configuration in Preferences → Keys → Key Bindings (action: "Send Hex Codes"). Claude can help you set these up during the setup session — just ask.
+
+**Other terminals**: Check your terminal's docs for sending hex codes on key press. The tmux prefix is `0x01` (`Ctrl+A`), followed by the command byte. Claude can help configure these — just ask.
+
+### Claude Code
+- **Auto-approved**: Read, Glob, Grep, git status/diff/log, ls, cat, head, tail, wc, pwd, echo, which — reduces manual approval friction
+- **SessionEnd hook**: auto git sync (fetch → rebase → commit → push)
+- **Statusline**: context usage progress bar (green → yellow → red at 70%) + model + cost + OS version
+
+### Ghostty Terminal (optional)
+- **Theme**: CitrusZest (dark)
+- **Font**: JetBrains Mono, size 18, thickened
+- **Style**: opaque background, tab-style titlebar, bar cursor (no blink), mouse hides while typing
+- Only installed if you use Ghostty. The install script will ask.
+
 ## Customization
 
 ### 1. Fill in your identity
@@ -147,7 +201,8 @@ For remote VMs accessed via SSH:
 
 ```bash
 # On the remote machine:
-git clone https://github.com/{{your-username}}/claude-os.git ~/claude_config
+gh repo fork Tycho-Xue/claude-os ~/claude_config --clone
+# Or manually: fork on GitHub, then: git clone https://github.com/<you>/claude-os.git ~/claude_config
 bash ~/claude_config/scripts/vm-bootstrap.sh
 ```
 
@@ -178,6 +233,6 @@ A: Just ignore `scripts/vm-bootstrap.sh` and the Sync section. The rest works on
 
 Apache 2.0 — see [LICENSE](LICENSE).
 
-## Credits
+---
 
 Created by [Le (Tycho) Xue](https://github.com/Tycho-Xue). Built through daily use of Claude Code across ML research, agent development, and infrastructure work.
