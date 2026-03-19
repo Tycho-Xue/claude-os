@@ -7,4 +7,4 @@ Restore project context. Arguments: $ARGUMENTS (optional, project name)
 3. **Load project files**:
    - Read `CONTEXT.md` (current status + next steps)
    - Read `KNOWLEDGE.md` (project knowledge)
-4. **Report**: Tell user "Le's Claude OS v2.1 loaded" + which project was restored, current status, next steps
+4. **Report**: Tell user "Le's Claude OS v2.2 loaded" + which project was restored, current status, next steps

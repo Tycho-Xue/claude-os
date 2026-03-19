@@ -1,4 +1,4 @@
-# Le's Claude OS v2.1
+# Le's Claude OS v2.2
 
 A persistent knowledge and workflow system for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). It gives Claude long-term memory across sessions, structured project management, and automatic state sync across machines.
 

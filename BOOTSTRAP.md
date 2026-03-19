@@ -4,7 +4,7 @@ Copy everything below the line and paste it into a new Claude Code session. It w
 
 ---
 
-I want you to set up "Le's Claude OS v2.1" — a persistent knowledge and workflow system that gives you long-term memory, structured project management, and multi-machine sync. Source repo: https://github.com/Tycho-Xue/claude-os
+I want you to set up "Le's Claude OS v2.2" — a persistent knowledge and workflow system that gives you long-term memory, structured project management, and multi-machine sync. Source repo: https://github.com/Tycho-Xue/claude-os
 
 ## Step 1: Install
 
@@ -22,6 +22,8 @@ bash ~/claude_config/dotfiles/install.sh
 After install, verify the git remote points to the user's fork (not upstream): `cd ~/claude_config && git remote -v`. Origin must be `github.com/<their-username>/...` for multi-machine sync to work.
 
 Check what terminal was detected from the install output. If it's **not Ghostty**, offer to help configure tmux keybindings for their terminal (e.g., for iTerm2: Preferences → Keys → Key Bindings → "Send Hex Codes"). User can skip this.
+
+**Important**: After install, tell the user to **restart Claude Code** (exit and reopen `claude`) for custom slash commands (`/handoff`, `/reload`) to take effect. They won't work in the current session since they were just symlinked.
 
 ## Step 2: Knowledge Transfer (if applicable)
 
