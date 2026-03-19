@@ -133,6 +133,8 @@
 > This section is optional. Remove it if you don't use Obsidian.
 
 Vault path: `{{~/path/to/your/vault/}}`, Local REST API port {{27124}}
+> **Note**: Vault path and REST API are only needed on the machine where Obsidian runs (typically your Mac).
+> On remote VMs, note-taking works out of the box via the `obsidian/` transit files — no Obsidian install or API needed.
 
 ### Structure (work/)
 ```
