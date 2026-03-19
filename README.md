@@ -17,23 +17,28 @@ Claude Code starts every session with zero context. You re-explain your project,
 
 ## Quick Start
 
-**Easiest way**: Copy the [bootstrap prompt](BOOTSTRAP.md) and paste it into Claude Code. It handles everything — fork, install, configure, and explains how the system works.
+**Easiest way**: Copy the [bootstrap prompt](BOOTSTRAP.md) and paste it into Claude Code. It handles everything — clone, install, set up your private repo, and explains how the system works.
 
 **Manual setup**:
 ```bash
-# 1. Fork and clone (you need your own repo for multi-machine sync)
-gh repo fork Tycho-Xue/claude-os ~/claude_config --clone
-# Or manually: fork on GitHub, then: git clone https://github.com/<you>/claude-os.git ~/claude_config
+# 1. Clone the template
+git clone https://github.com/Tycho-Xue/claude-os.git ~/claude_config
 
 # 2. Run install script (creates symlinks, detects your terminal)
 bash ~/claude_config/dotfiles/install.sh
 
-# 3. Customize CLAUDE.md — fill in the {{placeholders}} with your info
+# 3. Create your own private repo (for syncing across machines)
+cd ~/claude_config && git remote remove origin
+gh repo create claude-os --private --source . --push
+
+# 4. Customize CLAUDE.md — fill in the {{placeholders}} with your info
 #    At minimum: your name, role, and machine description
 
-# 4. Open Claude Code in any directory — it auto-loads your config
+# 5. Open Claude Code in any directory — it auto-loads your config
 claude
 ```
+
+> **Updating the OS**: To pull future updates, ask Claude to help upgrade — it will add the upstream remote, fetch, and selectively merge OS files without overwriting your personal data.
 
 ## Directory Structure
 
@@ -203,9 +208,8 @@ As you work, Claude will proactively suggest writing to `learnings/` (cross-proj
 For remote VMs accessed via SSH:
 
 ```bash
-# On the remote machine:
-gh repo fork Tycho-Xue/claude-os ~/claude_config --clone
-# Or manually: fork on GitHub, then: git clone https://github.com/<you>/claude-os.git ~/claude_config
+# On the remote machine (clone your private repo, not the upstream template):
+git clone git@github.com:<your-username>/claude-os.git ~/claude_config
 bash ~/claude_config/scripts/vm-bootstrap.sh
 ```
 

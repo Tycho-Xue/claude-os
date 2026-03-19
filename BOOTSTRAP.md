@@ -8,18 +8,29 @@ I want you to set up "Le's Claude OS v2.2" — a persistent knowledge and workfl
 
 ## Step 1: Install
 
-Check if `gh` CLI is available (`which gh`). If not, offer two options: install it (`brew install gh && gh auth login`), or do it manually (fork on GitHub website, then `git clone`).
-
 ```bash
 if [ -d ~/claude_config ]; then
     echo "~/claude_config already exists."
 else
-    gh repo fork Tycho-Xue/claude-os ~/claude_config --clone
+    git clone https://github.com/Tycho-Xue/claude-os.git ~/claude_config
 fi
 bash ~/claude_config/dotfiles/install.sh
 ```
 
-After install, verify the git remote points to the user's fork (not upstream): `cd ~/claude_config && git remote -v`. Origin must be `github.com/<their-username>/...` for multi-machine sync to work.
+After install, the user needs their own **private** GitHub repo for syncing personal config across machines. Help them set this up:
+
+1. Check if `gh` CLI is available (`which gh`). If not, offer to install (`brew install gh && gh auth login`), or guide them to create a repo manually on GitHub.
+2. Create a private repo and update the remote:
+```bash
+cd ~/claude_config
+git remote remove origin
+gh repo create claude-os --private --source . --push
+# Or manually: create a private repo on GitHub, then:
+# git remote add origin git@github.com/<their-username>/claude-os.git && git push -u origin main
+```
+3. Verify: `git remote -v` — origin must point to the user's own repo.
+
+> **Note**: To pull future OS updates, the user can ask Claude to help upgrade. Claude should add the upstream remote (`git remote add upstream https://github.com/Tycho-Xue/claude-os.git`), fetch, and selectively merge OS files (CLAUDE.md structure, DESIGN.md, claude-code/, dotfiles/, scripts/) without overwriting user's personal data (projects/, learnings/, secrets/).
 
 Check what terminal was detected from the install output. If it's **not Ghostty**, offer to help configure tmux keybindings for their terminal (e.g., for iTerm2: Preferences → Keys → Key Bindings → "Send Hex Codes"). User can skip this.
 
