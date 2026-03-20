@@ -30,6 +30,7 @@
 - Explain non-obvious logic
 ### Feedback
 - Tends to over-complicate. When hitting resistance → STOP and re-plan, don't push through
+- RECORDS.md is easy to forget. When completing a task, solving a non-trivial problem, or making an architecture decision — must write RECORDS, not just KNOWLEDGE
 - Must read CHANGELOG.md before modifying OS version (don't assume it doesn't exist — check Resource Map first)
 - New files must be indexed immediately — no ghost files (OS-level → Resource Map, project-level → KNOWLEDGE.md)
 - Put info in the right place: version changes → CHANGELOG, not RECORDS; OS-level doesn't need separate RECORDS
@@ -48,9 +49,10 @@
 - When corrected → immediately write to `learnings/` or CLAUDE.md Feedback
 1. `CONTEXT.md`: Overwrite with current state only (keep concise, just enough)
 2. `KNOWLEDGE.md`: Append new discoveries, compress when too long, outdated content → move to project RECORDS.md `## Archive` section (note reason + date)
-3. `RECORDS.md`: Cold data, don't compress, write anything valuable, don't wait for handoff
-   - Content: results, milestones, decision turning points, **failure analysis**
-   - Format: `## YYYY-MM-DD HH:MM Title`, timestamped for review
+3. `RECORDS.md`: **Must write** when completing a task / getting results / making key decisions / hitting failures — don't wait for handoff
+   - Content: results, milestones, decision turning points, **failure analysis** (especially bugs that took >10 min to debug)
+   - KNOWLEDGE answers "how to do it", RECORDS answers "what was done and why it was decided that way"
+   - Cold data, never compress. Format: `## YYYY-MM-DD HH:MM Title`
 4. `learnings/`: Cross-project reusable experience. Outdated content → move to `learnings/_archive.md` (note reason + date)
 5. `pipelines/`: When discovering repeated workflows or multi-step reusable tasks, proactively suggest creating a pipeline
 6. `secrets/credentials.md`: Update when credentials change
