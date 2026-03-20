@@ -63,6 +63,7 @@ if is_mac; then
     link "$DIR/.shell_common"   "$HOME/.shell_common"
     link "$DIR/.tmux.conf"      "$HOME/.tmux.conf"
     link "$DIR/.vimrc"          "$HOME/.vimrc"
+    link "$DIR/starship.toml"   "$HOME/.config/starship.toml"
 
     # ---- Terminal-specific config ----
     echo ""

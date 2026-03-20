@@ -67,6 +67,12 @@ if ! command -v starship &>/dev/null; then
     curl -sSf https://starship.rs/install.sh | sh -s -- --yes >/dev/null 2>&1
     echo "  ✓ starship"
 fi
+mkdir -p "$HOME/.config"
+cat > "$HOME/.config/starship.toml" << 'STARSHIP'
+[directory]
+truncation_length = 3
+truncate_to_repo = false
+STARSHIP
 
 # neovim (appimage — apt version is too old)
 if ! command -v nvim &>/dev/null; then
