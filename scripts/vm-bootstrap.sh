@@ -215,6 +215,42 @@ cat >> ~/.bashrc << 'EOF'
 EOF
 echo "  ✓ .bashrc updated to source .shell_common"
 
+# Ensure .zshrc exists with completion + .shell_common
+if command -v zsh &>/dev/null; then
+    cat > ~/.zshrc << 'ZSHEOF'
+# ~/.zshrc (vm-bootstrap generated)
+
+# ---- History ----
+HISTSIZE=10000
+SAVEHIST=10000
+HISTFILE=~/.zsh_history
+setopt SHARE_HISTORY
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+
+# ---- Completion ----
+autoload -Uz compinit && compinit
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'  # case-insensitive
+
+# ---- Shared config ----
+[[ -f "$HOME/.shell_common" ]] && source "$HOME/.shell_common"
+
+# ---- Plugins (cloned by vm-bootstrap) ----
+[[ -f "$HOME/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] && source "$HOME/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+[[ -f "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && source "$HOME/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh"
+ZSHEOF
+    echo "  ✓ .zshrc created with completion + .shell_common"
+
+    # Install zsh plugins (no brew on VMs, use git)
+    mkdir -p ~/.zsh
+    if [ ! -d "$HOME/.zsh/zsh-syntax-highlighting" ]; then
+        git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.zsh/zsh-syntax-highlighting 2>/dev/null && echo "  ✓ zsh-syntax-highlighting" || true
+    fi
+    if [ ! -d "$HOME/.zsh/zsh-autosuggestions" ]; then
+        git clone --depth 1 https://github.com/zsh-users/zsh-autosuggestions.git ~/.zsh/zsh-autosuggestions 2>/dev/null && echo "  ✓ zsh-autosuggestions" || true
+    fi
+fi
+
 echo "==> Reloading tmux (if running)..."
 tmux source-file ~/.tmux.conf 2>/dev/null && echo "  ✓ tmux reloaded" || echo "  → tmux not running, will take effect on next start"
 
