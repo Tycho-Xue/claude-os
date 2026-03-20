@@ -28,9 +28,8 @@ alembic upgrade head
 
 ## Records Index
 <!-- Auto-updated on handoff: grep "^## " from RECORDS.md -->
-- 2026-03-15 14:00 Initial deploy to staging — 200ms p99 latency
-- 2026-03-10 09:30 Failure: Connection pool exhaustion under load
-- 2026-03-01 16:00 Architecture decision: FastAPI + PostgreSQL
+- 2026-03-15 14:00 Initial benchmark
+- 2026-03-10 10:00 Project kickoff
 
 ## Archive
 - 2026-03-01 Initial project scaffold with FastAPI + SQLAlchemy
