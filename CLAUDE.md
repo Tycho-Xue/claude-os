@@ -63,7 +63,7 @@
 11. `obsidian/inbox_claude.md`: When user says "note this down" on a remote machine, append here
 ### File Contracts
 - **CONTEXT.md**: Concise: status + next steps. No history, no commands, no setup
-- **KNOWLEDGE.md**: `## ` sections, only keep current valid content. Must index all files in the project (including `resources/`)
+- **KNOWLEDGE.md**: `## ` sections, only keep current valid content. Must index all files in the project (including `resources/`). Maintain a `## Records Index` section at the bottom (grep titles from RECORDS.md, one line each) — auto-update on handoff
 - **RECORDS.md**: `## YYYY-MM-DD HH:MM Title` format, cold data, includes failure experiences
 - **CHANGELOG.md**: `## YYYY-MM-DD HH:MM Title` format, reverse chronological, includes motivation + specific changes
 - **resources/**: Project-level non-standard files (pipelines, scripts, trackers, etc.) go here; must be indexed in KNOWLEDGE.md
