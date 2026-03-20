@@ -4,6 +4,7 @@ Execute Handoff Protocol:
    - `CONTEXT.md`: Overwrite with current status + next steps
    - `KNOWLEDGE.md`: Append new discoveries (if any)
    - `RECORDS.md`: Write quantifiable results or milestones (if any)
+   - **Sync Records Index**: `grep "^## " RECORDS.md` → update `## Records Index` section at bottom of KNOWLEDGE.md
 
 2. **Write-back CLAUDE.md** (if changed):
    - Feedback: new corrections or preferences
