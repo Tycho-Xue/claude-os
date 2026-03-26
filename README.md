@@ -240,8 +240,4 @@ A: Just ignore `scripts/vm-bootstrap.sh` and the Sync section. The rest works on
 
 Apache 2.0 — see [LICENSE](LICENSE).
 
----
-
-Created by [Le (Tycho) Xue](https://www.linkedin.com/in/le-tycho-xue-5abbb9157/). Built through daily use of Claude Code across ML research, agent development, and infrastructure work.
-
-Feel free to fork, modify, and share — just please add a reference back and keep the attribution per the Apache 2.0 license.
+Created by [Le (Tycho) Xue](https://www.linkedin.com/in/le-tycho-xue-5abbb9157/). Built through daily use of Claude Code across ML research, agent development, and infrastructure work. Feel free to fork, modify, and share — just please add a reference back and keep the attribution per the Apache 2.0 license.
