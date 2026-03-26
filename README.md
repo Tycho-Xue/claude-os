@@ -242,4 +242,6 @@ Apache 2.0 — see [LICENSE](LICENSE).
 
 ---
 
-Created by [Le (Tycho) Xue](https://github.com/Tycho-Xue). Built through daily use of Claude Code across ML research, agent development, and infrastructure work.
+Created by [Le (Tycho) Xue](https://www.linkedin.com/in/le-tycho-xue-5abbb9157/). Built through daily use of Claude Code across ML research, agent development, and infrastructure work.
+
+If you find Claude OS useful, a ⭐ on the repo or a link back is appreciated. Feel free to fork, modify, and share — just keep the attribution per the Apache 2.0 license.
