@@ -1,25 +1,25 @@
-# Le's Claude OS v2.5
+# Claude OS v2.5
 
-A persistent knowledge and workflow system for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). It gives Claude long-term memory across sessions, structured project management, and automatic state sync across machines.
+An operating system for AI coding agents. [What does that mean?](INTRODUCTION.md)
 
-## The Problem
+Claude Code is a powerful AI — but it's a CPU without an OS. Every session starts from zero: no project context, no accumulated knowledge, no lessons from past mistakes. Claude OS gives it the missing infrastructure to do real, sustained work.
 
-Claude Code starts every session with zero context. You re-explain your project, re-share your preferences, and lose all the knowledge Claude built up in the last conversation. Claude OS fixes this by giving Claude a git-backed brain that persists across sessions and machines.
+## What It Provides
 
-## What You Get
+| Computer OS | Claude OS | What it solves |
+|-------------|-----------|----------------|
+| Memory management | Three-tier context loading (hot / warm / cold) | Context window is limited — load only what's needed |
+| File system | Structured knowledge files + indexing | Knowledge needs organization, not a blob of text |
+| File integrity | Knowledge quality tags + graduation review | Wrong knowledge is worse than no knowledge |
+| Process isolation | Task sections for parallel sessions | Multiple sessions can't overwrite each other |
+| Security patches | Feedback system + behavioral hooks | Mistakes get permanently fixed, not repeated |
+| Network sync | Git-based multi-machine sync | Same state everywhere you work |
 
-- **Persistent context** — Claude remembers your projects, preferences, and past decisions
-- **Structured knowledge** — Hot/warm/cold data separation so Claude loads only what it needs
-- **Handoff protocol** — Save state mid-conversation, restore later with `/reload`
-- **Multi-machine sync** — git-based sync with auto-commit on session end
-- **Custom statusline** — Context usage bar, model info, cost tracking, OS version
-- **Slash commands** — `/handoff`, `/reload`, `/deduce`, `/refactor`, `/connect`, `/check`
-- **Knowledge quality** — Tag system (`[fact]`/`[observation]`/`[inference]`) with graduation reviews to prevent wrong conclusions from persisting
-- **Parallel sessions** — Multiple sessions on the same project with independent task sections and clean lifecycle
+Plus: custom statusline, slash commands (`/handoff`, `/reload`, `/deduce`, `/refactor`, `/check`), dotfiles, and a VM bootstrap script.
 
 ## Quick Start
 
-**Easiest way**: Copy the [bootstrap prompt](BOOTSTRAP.md) and paste it into Claude Code. It handles everything — clone, install, set up your private repo, and explains how the system works.
+**Easiest way**: Copy the [bootstrap prompt](BOOTSTRAP.md) and paste it into Claude Code. It handles everything — clone, install, private repo setup, and a guided walkthrough.
 
 **Manual setup**:
 ```bash
@@ -34,213 +34,135 @@ cd ~/claude_config && git remote remove origin
 gh repo create claude-os --private --source . --push
 
 # 4. Customize CLAUDE.md — fill in the {{placeholders}} with your info
-#    At minimum: your name, role, and machine description
 
-# 5. Open Claude Code in any directory — it auto-loads your config
+# 5. Restart Claude Code, then open it in any directory
 claude
+```
+
+**Daily workflow**:
+```
+/reload my-project     → Claude restores all project context
+... work ...           → Claude follows the OS protocol automatically
+handoff                → State saved, synced via git
+                       → Next session, any machine: /reload → continues
 ```
 
 > **Updating the OS**: To pull future updates, ask Claude to help upgrade — it will add the upstream remote, fetch, and selectively merge OS files without overwriting your personal data.
 
-## Directory Structure
+## Architecture
 
 ```
 claude_config/
-├── CLAUDE.md              # The brain — rules, protocol, preferences (auto-loaded)
-├── DESIGN.md              # Why the system is designed this way
+├── CLAUDE.md              # Kernel — rules, protocol, boot sequence (auto-loaded)
+├── DESIGN.md              # Architecture decisions and design principles
 ├── CHANGELOG.md           # Version history
 ├── claude-code/
 │   ├── settings.json      # Permissions, hooks, statusline config
 │   ├── statusline.sh      # Custom status bar script
-│   └── commands/
-│       ├── handoff.md      # /handoff — save state and sync
-│       ├── reload.md       # /reload — restore project context
-│       ├── check.md        # /check — installation health check
-│       ├── connect.md      # /connect — SSH to remote VMs
-│       ├── deduce.md       # /deduce — hypothesis-driven debugging
-│       └── refactor.md     # /refactor — audit and clean OS files
+│   └── commands/          # Slash commands (/handoff, /reload, /deduce, etc.)
 ├── dotfiles/
-│   └── install.sh         # Symlink installer
+│   └── install.sh         # Symlink installer (detects terminal)
 ├── scripts/
-│   └── vm-bootstrap.sh    # Remote VM setup (tools + config)
+│   └── vm-bootstrap.sh    # Remote VM setup (9 CLI tools + config)
 ├── projects/
 │   └── example-project/
-│       ├── CONTEXT.md     # Current state (overwritten each handoff)
-│       ├── KNOWLEDGE.md   # Project knowledge (append-only, section-loaded)
-│       └── RECORDS.md     # Historical data (cold storage, never compressed)
+│       ├── CONTEXT.md     # Current state (hot — always loaded)
+│       ├── KNOWLEDGE.md   # Project knowledge (warm — section-loaded on demand)
+│       └── RECORDS.md     # Historical data (cold — grep on demand)
 ├── learnings/             # Cross-project reusable insights
 ├── pipelines/             # Reusable multi-step workflows
-└── secrets/               # Credentials (gitignored sensitive values)
+└── secrets/               # Credentials (gitignored)
 ```
+
+**CLAUDE.md is the kernel** — ~2300 tokens, auto-loaded every session via `~/.claude/CLAUDE.md` symlink. It defines Claude's methodology, knowledge management protocol, communication rules, and boot sequence. Everything else loads on demand through the protocol it defines.
 
 ## Core Concepts
 
 ### Three-File System (per project)
 
-| File | Purpose | Loading | Write Pattern |
-|------|---------|---------|---------------|
-| `CONTEXT.md` | Current status + next steps (supports task sections for parallel sessions) | Always read in full | Overwrite each handoff |
-| `KNOWLEDGE.md` | Project knowledge, gotchas, commands | Section-loaded on demand | Append new, archive old |
-| `RECORDS.md` | Results, milestones, failure analysis | Grep headers, read on demand | Append only, never compress |
+| File | Role | Analogy |
+|------|------|---------|
+| `CONTEXT.md` | Current state + next steps | RAM — always loaded, overwritten each handoff |
+| `KNOWLEDGE.md` | Project knowledge, gotchas, verified facts | Disk — section-loaded on demand, quality-controlled |
+| `RECORDS.md` | Results, decisions, failure analysis | Cold storage — append-only, never compressed |
 
-### Section Loading
+### Knowledge Quality
 
-Files use `## ` headers as section markers. Claude greps for headers to find what it needs, then reads only the relevant section. This saves 50-80% of context compared to reading entire files.
+Every piece of knowledge is tagged:
+- `[fact]` — verified, safe to reason from
+- `[observation]` — phenomenon observed, no causation implied
+- `[inference]` — unverified, stays in working memory until confirmed
+
+Only `[fact]` and `[observation]` enter long-term storage (KNOWLEDGE.md). Inferences stay in CONTEXT until confirmed through a graduation review. This prevents wrong conclusions from persisting across sessions.
 
 ### Handoff & Reload
 
-When you're done working (or context is getting full), say "handoff" or use `/handoff`. Claude writes back all project state and syncs via git. Next session, `/reload` restores everything.
+Say "handoff" or `/handoff` → Claude saves all state + syncs via git. Next session: `/reload` restores everything. Context usage ≥70% → statusline turns red, Claude reminds you.
 
-### Multi-Machine Sync
+### Five Core Principles
 
-A `SessionEnd` hook automatically commits and pushes changes. On session start, Claude pulls the latest. Uses rebase strategy to avoid stale overwrites when working from multiple machines.
-
-## Default Preferences
-
-These ship as defaults because they make Claude Code significantly more effective. You can customize any of them in `CLAUDE.md`.
-
-### Behavioral
-| Preference | Why |
-|-----------|-----|
-| **Just do it, don't just give instructions** | Claude should execute tasks, not explain how to do them. You're using an agent, not a chatbot. |
-| **Don't summarize after every response** | Summaries waste tokens and slow you down. You can read the diff. |
-| **Plan before non-trivial tasks (3+ steps)** | Prevents Claude from rushing into complex work and hitting dead ends. |
-| **STOP and re-plan when complexity grows** | The #1 failure mode: Claude pushes through increasing complexity instead of stepping back. This rule catches that. |
-| **Verify before reporting done** | Claude tends to say "done!" before actually confirming the result works. This forces verification. |
-| **Write corrections to learnings immediately** | Without this, Claude repeats the same mistakes across sessions. |
-| **Use subagents for complex tasks** | Keeps the main context window clean for the primary task. |
-
-### Coding
-| Preference | Why |
-|-----------|-----|
-| **Simplicity > abstraction** | Over-engineering is the default failure mode. This keeps code focused. |
-| **Clean, runnable, iterable** | Ship working code first, refine later. |
-| **Descriptive variable names** | `x`, `y`, `tmp` are debugging nightmares. |
-| **Comment input/output shapes** | Critical for ML/data work, useful everywhere. |
-
-### Protocol
-| Preference | Why |
-|-----------|-----|
-| **Read before writing** | Prevents Claude from proposing changes to code it hasn't read. |
-| **Scratch pad for temp code** | `claude_code_scratch_pad/` keeps experiments out of your project. |
-| **Long commands to clipboard** | `echo '...' \| pbcopy` — easier than copy-pasting from terminal output. |
+1. **Understand First** — don't guess, ask. List assumptions for confirmation
+2. **Structure > Rules** — when a rule keeps getting violated, upgrade it to a hook or contract
+3. **Minimal & Surgical** — search before writing, don't touch unrelated code
+4. **Verify & Record** — not done until verified, not valuable until recorded
+5. **Communicate Progress** — task lists, terse status lines, no log dumps
 
 ## What Ships by Default
 
-The repo includes opinionated dotfiles that are symlinked on install (Mac only; VMs use inline configs via `vm-bootstrap.sh`). Here's everything that gets installed and why.
+### Shell & Terminal
+- **zsh**: 10K shared history, case-insensitive completion, zoxide/starship/conda integration
+- **tmux**: `Ctrl+A` prefix, mouse scrolling, auto-unsets Claude Code tokens for security
+- **vim**: dark background, 4-space tabs
+- **Ghostty** (optional): CitrusZest theme, JetBrains Mono 18, pre-configured keybindings
+- **Other terminals**: hex code table provided for tmux keybindings ([see below](#terminal-keybindings))
 
-### Shell (zsh)
-- **History**: 10,000 entries, shared across terminals, deduplicated
-- **Aliases**: `ll`, `la`, `l`, colorized `ls`/`grep`
-- **Tool integrations**: [zoxide](https://github.com/ajeetdsouza/zoxide) (smart `cd`), [yazi](https://github.com/sxyazi/yazi) (file manager via `y`), [starship](https://starship.rs) prompt, conda auto-init
-- **Plugins**: zsh-syntax-highlighting, zsh-autosuggestions (install via `brew install zsh-syntax-highlighting zsh-autosuggestions`)
-
-### tmux
-- **Prefix**: `Ctrl+A` (instead of default `Ctrl+B` — easier to reach)
-- **Mouse scrolling**: enabled
-- **Status bar**: dark background, green highlight on active window, time + date on right
-- **Security**: auto-unsets Claude Code env vars to prevent token leakage into child sessions
-
-### Vim
-- Dark background, 4-space tabs, expandtab, smartindent
+### Claude Code
+- **Auto-approved tools**: Read, Glob, Grep, git status/diff/log, ls, cat, head, tail, wc — reduces approval friction
+- **SessionEnd hook**: auto git sync (fetch → rebase → commit → push)
+- **Statusline**: context usage bar (green → yellow → red at 70%) + model + cost + OS version
 
 ### Terminal Keybindings
 
-These keybindings let you drive tmux from your terminal emulator using familiar shortcuts. They work by sending tmux prefix sequences (hex codes).
-
 | Shortcut | Action | Hex Codes |
 |----------|--------|-----------|
-| `Cmd+Alt+Left` | tmux: previous window | `0x01 0x70` |
-| `Cmd+Alt+Right` | tmux: next window | `0x01 0x6e` |
+| `Cmd+Alt+Left/Right` | tmux: prev/next window | `0x01 0x70` / `0x01 0x6e` |
 | `Cmd+1` – `Cmd+5` | tmux: go to window 1–5 | `0x01 0x31`–`0x35` |
 | `Cmd+S` | tmux: choose session | `0x01 0x73` |
 | `Cmd+Z` | tmux: zoom pane | `0x01 0x7a` |
-| `Cmd+D` | Split right | native terminal split |
-| `Cmd+Shift+D` | Split down | native terminal split |
-| `Ctrl+Shift+Arrow` | Navigate splits | native terminal split |
-| `Cmd+Shift+Enter` | Toggle split zoom | native terminal split |
-| `` Ctrl+` `` | Quick terminal (dropdown) | native terminal feature |
 
-**Ghostty**: Pre-configured in `dotfiles/ghostty/config`, symlinked automatically.
-
-**iTerm2**: Needs manual configuration in Preferences → Keys → Key Bindings (action: "Send Hex Codes"). Claude can help you set these up during the setup session — just ask.
-
-**Other terminals**: Check your terminal's docs for sending hex codes on key press. The tmux prefix is `0x01` (`Ctrl+A`), followed by the command byte. Claude can help configure these — just ask.
-
-### Claude Code
-- **Auto-approved**: Read, Glob, Grep, git status/diff/log, ls, cat, head, tail, wc, pwd, echo, which — reduces manual approval friction
-- **SessionEnd hook**: auto git sync (fetch → rebase → commit → push)
-- **Statusline**: context usage progress bar (green → yellow → red at 70%) + model + cost + OS version
-
-### Ghostty Terminal (optional)
-- **Theme**: CitrusZest (dark)
-- **Font**: JetBrains Mono, size 18, thickened
-- **Style**: opaque background, tab-style titlebar, bar cursor (no blink), mouse hides while typing
-- Only installed if you use Ghostty. The install script will ask.
+**Ghostty**: auto-configured. **iTerm2**: set up in Preferences → Keys → "Send Hex Codes". **Other terminals**: Claude can help configure these during setup.
 
 ## Customization
 
-### 1. Fill in your identity
-Edit `CLAUDE.md` and replace `{{placeholders}}` with your actual info:
-- Name, role, organization
-- Email addresses and GitHub username
-- Machine descriptions
+1. **Fill in `{{placeholders}}`** in CLAUDE.md — at minimum your name and role
+2. **Add coding rules** for your stack (Python/ML, Rust, Go — examples in CLAUDE.md)
+3. **Create your first project**: `mkdir -p ~/claude_config/projects/my-project`
+4. **Add dotfiles** — put your configs in `dotfiles/`, the symlink installer handles the rest
+5. **Learnings and pipelines** grow organically as you work — Claude suggests writing them when appropriate
 
-### 2. Add your own coding rules
-The `### Coding — Style` section in `CLAUDE.md` is intentionally generic. Add language-specific rules for your stack. Example for Python/ML:
-
-```markdown
-### Coding — Python / ML
-- Never hardcode `.cuda()`, use `.to(device=device, dtype=dtype)`
-- Eval paths use `torch.no_grad()`, release GPU memory
-- Set random seeds: torch, numpy, random
-- Handle batch_size=1, empty input, shape mismatch
-```
-
-### 3. Add your dotfiles
-The `dotfiles/` directory has a commented-out section in `install.sh` for shell dotfiles. Uncomment and customize for your terminal, shell, and editor configs.
-
-### 4. Create your first project
-```bash
-mkdir -p ~/claude_config/projects/my-project
-```
-Then let Claude create the CONTEXT.md and KNOWLEDGE.md during your first session — or copy from `projects/example-project/`.
-
-### 5. Add learnings and pipelines
-As you work, Claude will proactively suggest writing to `learnings/` (cross-project insights) and `pipelines/` (reusable workflows). You can also create them manually.
-
-## Remote Machines (VM Setup)
-
-For remote VMs accessed via SSH:
+## Remote Machines
 
 ```bash
-# On the remote machine (clone your private repo, not the upstream template):
+# On the remote machine (clone your private repo):
 git clone git@github.com:<your-username>/claude-os.git ~/claude_config
 bash ~/claude_config/scripts/vm-bootstrap.sh
 ```
 
-This installs: ripgrep, fd, bat, fzf, zoxide, starship, neovim, conda, and configures tmux/vim/shell/Claude Code.
-
-## Settings
-
-`claude-code/settings.json` includes:
-- **Permissions**: Pre-approved read-only tools (Read, Glob, Grep, git status, ls, etc.) to reduce manual approvals
-- **SessionEnd hook**: Auto-sync via git on session end
-- **Statusline**: Context usage bar with color coding (green → yellow → red at 70%)
+Installs: ripgrep, fd, bat, fzf, zoxide, starship, neovim, conda. Configures tmux/vim/shell/Claude Code.
 
 ## FAQ
 
-**Q: Will this conflict with my existing `~/.claude/` config?**
-A: `install.sh` backs up existing files to `.bak` before symlinking. You can restore anytime.
+**Will this conflict with my existing `~/.claude/` config?**
+`install.sh` backs up existing files to `.bak` before symlinking. You can restore anytime.
 
-**Q: Do I need to use all the features?**
-A: No. The minimum viable setup is just `CLAUDE.md` symlinked. Everything else is opt-in.
+**Do I need to use all the features?**
+No. The minimum viable setup is just `CLAUDE.md` symlinked. Everything else is opt-in.
 
-**Q: Can I use this with multiple Claude Code instances?**
-A: Yes. The git-based sync is designed for this. Each machine commits and rebases independently.
+**Can I use this with multiple machines?**
+Yes. Git-based sync with auto-commit on session end. Each machine rebases independently.
 
-**Q: What if I don't have remote machines?**
-A: Just ignore `scripts/vm-bootstrap.sh` and the Sync section. The rest works on a single machine.
+**What if I don't have remote machines?**
+Ignore `vm-bootstrap.sh` and the Sync section. Everything else works on a single machine.
 
 ## License
 
