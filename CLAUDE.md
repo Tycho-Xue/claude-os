@@ -1,9 +1,9 @@
-# {{Your Name}}'s Claude OS v2.5
+# Le's Claude OS v2.5
 # symlink: ~/.claude/CLAUDE.md → ~/claude_config/CLAUDE.md (global)
 # Version is manually controlled: bump when structural changes are made
 
 ## Identity & Preferences
-- {{Your Name}}, {{your role}} @ {{your org}}
+- {{your name}}, {{your role}} @ {{your org}}
 - Focus: {{your focus areas}}
 - Be direct: just do it, don't just give instructions; don't ask if you can do it
 - Don't summarize at the end of every response
@@ -276,6 +276,6 @@ work/
 ## Boot (execute on first interaction of each new session)
 1. `cd ~/claude_config && git pull --ff-only`
 2. Load current project files per Loading rules
-3. Tell user: Loaded {{Your Name}}'s Claude OS v2.5 + current project status summary
+3. Tell user: Loaded Claude OS v2.5 + current project status summary
 
 When improving the OS itself, read `~/claude_config/DESIGN.md`. Living document — update when new info is discovered.

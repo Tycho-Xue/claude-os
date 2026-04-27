@@ -1,4 +1,4 @@
-# Claude OS v2.5
+# Le's Claude OS v2.5
 
 An operating system for AI coding agents. [What does that mean?](INTRODUCTION.md)
 

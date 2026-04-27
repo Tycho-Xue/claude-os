@@ -4,7 +4,7 @@ Copy everything below the line and paste it into a new Claude Code session. It w
 
 ---
 
-I want you to set up "Claude OS v2.5" — an operating system for AI coding agents. It turns Claude Code from a stateless tool into a stateful, self-correcting work environment with persistent project knowledge, multi-machine sync, and knowledge quality controls. Source repo: https://github.com/Tycho-Xue/claude-os
+I want you to set up "Le's Claude OS v2.5" — an operating system for AI coding agents. It turns Claude Code from a stateless tool into a stateful, self-correcting work environment with persistent project knowledge, multi-machine sync, and knowledge quality controls. Source repo: https://github.com/Tycho-Xue/claude-os
 
 > For background on what this is and why, read `INTRODUCTION.md` in the repo after cloning.
 
