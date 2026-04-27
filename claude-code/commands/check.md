@@ -7,8 +7,7 @@ Check that these symlinks exist and point to valid targets:
 - `~/.claude/CLAUDE.md` → `~/claude_config/CLAUDE.md`
 - `~/.claude/settings.json` → `~/claude_config/claude-code/settings.json`
 - `~/.claude/statusline.sh` → `~/claude_config/claude-code/statusline.sh`
-- `~/.claude/commands/handoff.md` → `~/claude_config/claude-code/commands/handoff.md`
-- `~/.claude/commands/reload.md` → `~/claude_config/claude-code/commands/reload.md`
+- `~/.claude/commands` → `~/claude_config/claude-code/commands` (directory symlink)
 
 ### 2. Git Remote
 - `cd ~/claude_config && git remote -v`
