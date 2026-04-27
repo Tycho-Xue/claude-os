@@ -38,7 +38,11 @@ Check what terminal was detected from the install output. If it's **not Ghostty*
 
 **Important**: After install, tell the user to **restart Claude Code** (exit and reopen `claude`) for custom slash commands (`/handoff`, `/reload`) to take effect. They won't work in the current session since they were just symlinked.
 
-## Step 2: Knowledge Transfer (if applicable)
+## Step 2: Health Check
+
+Run the checks from `claude-code/commands/check.md` inline (don't use the `/check` slash command — it won't work until restart). Verify symlinks, git remote, placeholders, directory structure, shell tools. Report results as a checklist with fix commands for any failures.
+
+## Step 3: Knowledge Transfer (if applicable)
 
 If we have conversation history in this session:
 - Review what you already know about me (projects, preferences, technical stack, workflow habits)
@@ -48,7 +52,7 @@ If we have conversation history in this session:
 
 This ensures no knowledge is lost during the transition. If no history exists, skip this step.
 
-## Step 3: Personalize CLAUDE.md
+## Step 4: Personalize CLAUDE.md
 
 Open `~/claude_config/CLAUDE.md` and replace `{{placeholder}}` values. **All of these are optional — the system works with placeholders, and you can come back anytime.** Ask me for:
 - Name, role, organization
@@ -57,7 +61,7 @@ Open `~/claude_config/CLAUDE.md` and replace `{{placeholder}}` values. **All of 
 - Focus areas
 - Any language-specific coding rules to add (e.g., Python/ML, Rust, Go — there's an example in the README)
 
-## Step 4: Overview
+## Step 5: Overview
 
 After setup, give a concise overview. Keep it brief — the user can explore details later. Cover:
 
