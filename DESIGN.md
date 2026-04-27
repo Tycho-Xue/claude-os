@@ -45,16 +45,16 @@ Read this file when iterating on or improving the claude_config structure. Not n
 - **Content boundary**: only technical knowledge ("how does this thing work"). Behavior rules ("what should you do") go in CLAUDE.md Feedback; project-specific knowledge goes in project KNOWLEDGE
 - **Write-back**: when writing learnings, also update the Resource Map Learnings table
 
-### Knowledge Quality (v2.3)
+### Knowledge Quality (v2.4)
 - **KNOWLEDGE = long-term memory (verified)**, CONTEXT = working memory (may contain unverified)
 - **Tag system**: `[fact]` (trustworthy, safe to reason from), `[observation]` (phenomenon trustworthy, no causation, check conditions), `[inference]` (may be wrong, don't use to rule out possibilities or override user)
-- **Storage separation**: KNOWLEDGE only accepts `[fact]` + `[observation]`. `[inference]` stays in CONTEXT until confirmed and graduated to `[fact]` (graduation review triggered on handoff / branch merge)
+- **Storage separation**: KNOWLEDGE only accepts `[fact]` + `[observation]`. `[inference]` stays in CONTEXT until confirmed and graduated to `[fact]` (graduation review triggered on handoff / task completion)
 - **Traceability**: Every knowledge entry must have reference/conditions. Untraceable = untrustworthy. `[observation]` must record conditions (machine, config, data) so you can judge if it applies to the current scenario
 - **Information cocoon is the biggest risk**: Wrong knowledge that goes unchallenged → going in circles. Solutions: confidence tagging + flip hypotheses when stuck + user input takes priority over existing conclusions
 - **Motivation**: Previously, inference and fact were stored together in KNOWLEDGE with no distinction. Wrong debug conclusions were treated as facts by later sessions, causing repeated debugging in wrong directions
 
 ### KNOWLEDGE Write Design
-- **Only write `[fact]` + `[observation]`, same for single and branching** — branches exist to share knowledge and isolate context. A gotcha discovered by the training branch should be immediately visible to the eval branch
+- **Only write `[fact]` + `[observation]`, same for any task section** — knowledge discovered in one task should be immediately visible to others
 - **`[inference]` never enters KNOWLEDGE** — stays in CONTEXT's staged findings. On handoff, carry forward all findings from active investigations. Only after confirmation through graduation review does it enter KNOWLEDGE
 - **Check for duplicates/stale/conflicts before writing** — grep section headers to locate relevant paragraphs, only read that segment. Conflicts must be resolved
 - **Reference material** (trackers, commands, scripts) → put in `resources/`, KNOWLEDGE maintains `## Resources Index`
@@ -68,127 +68,61 @@ Read this file when iterating on or improving the claude_config structure. Not n
 - Project-level historical data (benchmark results, performance data, milestones)
 - Cold data, not loaded proactively — Grep headers for on-demand reading
 - Never compressed — cold data doesn't consume context, preserve full detail
+- v2.5: structured header format (`**Result** / **Runs** / **Lesson**` + `### Details`) for quick grep-based lookup
 
-### Branching Context Model (v2.3)
+### Task Sections (v2.5, replaces Branching Context Model)
 
-**Motivation**: The same project often has parallel workflows (training + debug + data prep). Multiple Claude Code sessions or subagents work simultaneously. They need independent context while remaining aware of each other, with clean wrap-up.
+**Motivation**: Projects often have parallel workflows (training + debug + data prep) with multiple Claude Code sessions. They need independent context without overwriting each other. The v2.3 Branching Model designed a full Master/Branch hierarchy, merge ceremony, and prefix naming, but turned out to be too heavy in practice.
 
-**Core idea**: One CONTEXT.md file, two modes that switch automatically. Backwards compatible — single session behavior is unchanged.
+**Solution**: CONTEXT.md uses flat `## task-name` sections, each session writes only its own. No Master, no merge ceremony, no mode switching.
 
-**Modes**:
-- **Single mode (default)**: `## Master` only — identical to pre-v2.3 behavior
-- **Branching mode (when parallel)**: `## Master` + multiple `## Branch: br_xxx` sections
-
-**CONTEXT.md format (branching mode)**:
+**CONTEXT.md format**:
 ```markdown
-## Master
-project-v2: training in progress, simultaneously debugging OOM + preparing data
-active: br_training, br_debug, br_data
+## training
+<!-- conv: abc123 -->
+model-v2 iter 5000/30000, job #772
+next: eval at iter 10000
 
-## Branch: br_training
-owner: session "project/br_training"
-- cosine LR schedule, step 12000/30000
-- [task: agent_eval] running, evaluating checkpoint-10000
-next: eval at step 15000
-
-## Branch: br_debug
-owner: session "project/br_debug"
-- OOM on 8xGPU bs=4, gradient checkpointing config key was wrong
-- [→ br_training] after fix, training needs relaunch
-next: fix config, small test to verify
+## debug-packing
+<!-- conv: def456 -->
+cu_seqlens: zero-length seq at index 15
+next: check packer output
 ```
 
-**Three-point naming alignment (prefix recognition, not hierarchy)**:
-```
-Type        tmux session                    CC session name             CONTEXT.md
-────────────────────────────────────────────────────────────────────────────────────
-Master      claude/{project}                {project}                   ## Master
-Branch      claude/{project}/br_{name}      {project}/br_{name}         ## Branch: br_{name}
-Subagent    claude/{project}/br_{name}/agent_{task}  (or Agent tool inline)  [task: agent_{task}]
-```
-- See `br_` → branch, see `agent_` → subagent, no prefix → master
-- Most subagents are Agent tool inline; only long-running ones get their own session
+**Rules**:
+- Read: entire CONTEXT (aware of all tasks)
+- Write: only your own section, don't touch others
+- New task: add `## section`
+- Complete: graduation review (confirmed → KNOWLEDGE, results → RECORDS) → delete section
+- Abandon: delete section; write partial results to RECORDS first if valuable
+- Subagent: doesn't write CONTEXT, results go to session owner
+- Conversation tracking: `<!-- conv: {uuid} -->` per section, for crash recovery via `claude --resume {uuid}`
 
-**Full lifecycle**:
+**Why it replaced the Branching Model**:
+- No Master section — section headers themselves are the dashboard
+- No merge ceremony — just delete the section
+- No `br_` prefix — use descriptive task names
+- No mode switching — one task = one section, naturally grows and shrinks
+- Single task = single section, identical to pre-v2.3 behavior
 
-1. **Single → Branching**: When user opens a second parallel session, Master becomes an overview, each session creates its own `## Branch: br_xxx`
-2. **During work**:
-   - Read: entire CONTEXT.md (naturally aware of all branches)
-   - Re-read timing: must read once before starting; during long tasks (after handoff reload, at milestones), proactively re-read to check for updates from other branches (especially `[→ br_self]` markers)
-   - Write: only your own `## Branch: br_xxx` section
-   - Subagent: inline `[task: agent_xxx]` within parent branch — two-layer cap
-   - Subagent completes → branch owner merges results into branch body, deletes `[task: agent_xxx]` block
-   - Subagent unexpectedly exits → `[task: agent_xxx]` remains in branch. Branch owner handles on next read: check actual task state, mark done or relaunch, then clean up
-   - Cross-branch communication: write in your own branch, tag `[→ br_target]`
-   - Temporary data (tables, eval results, conclusions) can live in your branch section
-3. **Branch complete → Merge**:
-   - Knowledge → append to KNOWLEDGE.md
-   - Results/decisions → RECORDS.md
-   - Update `## Master` (add outcome summary)
-   - Delete your `## Branch: br_xxx` section
-   - Remove from Master's `active:` list
-4. **Branching → Single**: When the last branch merges, only `## Master` remains — back to single mode
+### File Ownership (v2.5)
 
-**Read/write matrix**:
-| | Read | Write | KNOWLEDGE writes |
-|---|---|---|---|
-| Single session | entire file | Master | anytime |
-| Branch session | entire file | own Branch only | anytime (check duplicates/stale before writing) |
-| Subagent | entire file | inline within parent Branch | don't write — hand off to owner |
+Explicit owner and operation rules for each file:
 
-**Cleanup checklist (on branch merge)**:
-1. Valuable findings → KNOWLEDGE.md
-2. Results/decisions → RECORDS.md
-3. Update Master summary
-4. Delete Branch section (including all inline tasks)
-5. Remove from active list
-6. Verify CONTEXT.md is clean (no orphan branches, no stale tasks)
+| File | Owner | Operation Rules |
+|------|-------|----------------|
+| CLAUDE.md | User | Claude proposes changes, user confirms before applying |
+| CONTEXT.md | Claude | Overwrite, session owner only |
+| KNOWLEDGE.md | Claude | Append `[fact]`/`[observation]`. Breaking changes need confirmation |
+| RECORDS.md | Claude | Append-only, don't edit old entries |
+| DESIGN.md | User | Update on architecture changes, Claude proposes user confirms |
+| CHANGELOG.md | Claude | Append-only, reverse chronological |
+| learnings/*.md | Claude | Cross-project technical knowledge, can update. Behavior rules don't go here |
 
-**Branch abort (abandoning a branch)**:
-- User says to drop it → delete branch section + remove from active, don't do knowledge merge
-- If there are partial results worth keeping → write to RECORDS first, then delete
-
-**Branch handoff (session runs out of context but task isn't done)**:
-- Write current branch state to CONTEXT.md → git push
-- New session reads the branch and continues, owner auto-inherits
-
-**What we don't do**:
-- No subdirectories or multi-file — one CONTEXT.md is enough
-- No branch nesting — session → branch, subagent → inline task, two layers max
-- No auto-creating branches — user triggers explicitly
-
-**Conversation tracking (crash recovery)**:
-
-CC conversations live in `~/.claude/projects/{project-hash}/{uuid}.jsonl`. Recording the conv ID in CONTEXT.md enables recovery after crashes.
-
-Format: each section includes `<!-- conv: {uuid} -->`
-```markdown
-## Master
-<!-- last saved: 2026-03-28 14:20 PST -->
-<!-- conv: b8b6f0a1-7f68-4643-9803-457c486d77d3 -->
-project-v2 training in progress
-
-## Branch: br_training
-<!-- conv: def456... -->
-owner: session "project/br_training"
-```
-
-Lifecycle:
-| Event | Action |
-|-------|--------|
-| Session first writes CONTEXT | Add `<!-- conv: {uuid} -->` |
-| Incremental write / handoff | Keep conv ID unchanged |
-| New session takes over same branch | Overwrite with new conv ID |
-| Branch merge | Delete with section |
-| Crash recovery | Read conv ID → `claude --resume {uuid}` or read .jsonl for context |
-
-Prerequisite: `~/.claude/` must be on persistent storage. If lost (e.g., node replacement), conversations can't be recovered — but CONTEXT.md is preserved via git, so progress isn't lost.
-
-**Compatibility with existing OS**:
-- Single mode = pre-v2.3 behavior, unchanged
-- Handoff: each session writes its own branch + Master summary, git commit push
-- Loading: unchanged — read CONTEXT.md + KNOWLEDGE.md, branches are visible for global awareness
-- Subagent rules: branch owner = lead, only owner does write-back
+Categories:
+- **Immutable**: RECORDS.md (old entries), CHANGELOG.md (old entries)
+- **Mutable by Claude**: CONTEXT.md, KNOWLEDGE.md
+- **Human-governed**: CLAUDE.md, DESIGN.md
 
 ### Dotfiles Management
 - `dotfiles/` directory stores all config files (terminal, tmux, shell, etc.)
@@ -228,7 +162,8 @@ Prerequisite: `~/.claude/` must be on persistent storage. If lost (e.g., node re
 - Not needed yet while project count is small
 
 ## Evolution Log
-- 2026-03-27: **v2.3** Branching Context Model — CONTEXT.md supports single/branching dual modes, parallel sessions each write their own branch section, prefix naming (br_/agent_), two-layer cap, full merge/abort/handoff lifecycle. Knowledge Quality system — tag definitions ([fact]/[observation]/[inference]), storage separation, graduation review, anti-cocoon measures
+- 2026-04-27: **v2.5** Task Sections + Structured Records — Branching Model replaced with flat task sections (no Master/merge ceremony), RECORDS.md gets structured header format (`**Result**/**Runs**/**Lesson**` + `### Details`), File Ownership table (immutable/mutable/human-governed). Core rules upgraded to 5 Named Principles (Understand First, Structure > Rules, Minimal & Surgical, Verify & Record, Communicate Progress). Feedback reorganized into Behavioral/Quality Gates/OS Hygiene categories
+- 2026-03-27: **v2.3** Branching Context Model + Knowledge Quality — CONTEXT.md supports single/branching dual modes, parallel sessions each write their own branch section, prefix naming (br_/agent_), two-layer cap, full merge/abort/handoff lifecycle. Knowledge Quality system — tag definitions ([fact]/[observation]/[inference]), storage separation, graduation review, anti-cocoon measures
 - 2026-03-20: Project Inheritance pattern — `## Parent:` in KNOWLEDGE.md, Loading auto-loads parent
 - 2026-03-16: **v2.1** — Merged into single CLAUDE.md (deleted 7 redundant files, ~135 lines ~2300 tokens)
 - 2026-03-16: claude-code/ directory added to git (settings.json, statusline.sh, commands/)

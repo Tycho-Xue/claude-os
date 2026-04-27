@@ -4,7 +4,7 @@ Copy everything below the line and paste it into a new Claude Code session. It w
 
 ---
 
-I want you to set up "Le's Claude OS v2.3" — a persistent knowledge and workflow system that gives you long-term memory, structured project management, and multi-machine sync. Source repo: https://github.com/Tycho-Xue/claude-os
+I want you to set up "Le's Claude OS v2.5" — a persistent knowledge and workflow system that gives you long-term memory, structured project management, and multi-machine sync. Source repo: https://github.com/Tycho-Xue/claude-os
 
 ## Step 1: Install
 

@@ -2,6 +2,44 @@
 
 Record structural changes to the OS here. Not needed for daily work.
 
+## v2.5 — Task Sections, Named Principles, Structured Records
+
+Motivation: The v2.3 Branching Context Model was too heavy for real-world use — its Master/Branch hierarchy and merge ceremony were never actually needed. Meanwhile, core rules lacked clear naming and priority, RECORDS had no consistent structure for quick lookup, and feedback items grew without organization.
+
+**New: Task Sections (replaces Branching Context Model)**
+- CONTEXT.md uses flat `## task-name` sections instead of Master/Branch hierarchy
+- Each parallel session writes only its own section — no merge ceremony needed
+- Task completion: graduation review → delete section. No mode switching
+- Much simpler than Branching Model while solving the same core problem (parallel session isolation)
+
+**New: 5 Named Core Principles**
+- Understand First, Structure > Rules, Minimal & Surgical, Verify & Record, Communicate Progress
+- Each principle has concrete sub-rules explaining how to apply it
+- "Structure > Rules" encourages using hooks/contracts/templates instead of adding more prose rules
+
+**New: Structured RECORDS Format**
+- Each entry starts with `**Result** / **Runs** / **Lesson**` header, narrative after `### Details`
+- Enables quick lookup via `grep "^\*\*Result\*\*:"` without reading full entries
+
+**New: File Ownership Table** (in DESIGN.md)
+- Explicit owner and operation rules for every file type
+- Three categories: immutable, mutable by Claude, human-governed
+
+**Updated: Feedback**
+- Reorganized into three categories: Behavioral, Quality Gates, OS Hygiene
+- New items: auth failure → check credentials first; task switching → re-grep KNOWLEDGE; read docs before diving in; cross-branch code verification
+- Removed verbose incident descriptions in favor of concise rules
+
+**Updated: Parallel Sessions**
+- Simplified naming: `claude/{project}/{task}` (no `br_` prefix)
+- Removed: Master section, merge ceremony, branching/single mode distinction
+- Kept: conversation tracking, subagent rules, KNOWLEDGE write timing
+
+**Updated: DESIGN.md**
+- Task Sections architecture decision (motivation for replacing Branching Model)
+- File Ownership table with immutable/mutable/human-governed categories
+- Knowledge Quality version updated to v2.4
+
 ## v2.3 — Branching Context Model + Knowledge Quality System
 
 Motivation: Projects often have parallel workflows (training + debug + data prep) with multiple Claude Code sessions or subagents working simultaneously. They need independent context while remaining mutually aware, with clean wrap-up. Additionally, the lack of distinction between verified facts and unverified inferences in KNOWLEDGE caused wrong conclusions to persist and mislead later sessions.

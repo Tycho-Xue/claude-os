@@ -1,3 +1,9 @@
+---
+name: deduce
+description: Structured reasoning framework for hard problems. Hypothesis-driven elimination with iterative verification via autopilot loop. Creates deduce_{name}.md scratch file tracking hypotheses + evidence + resolution.
+argument-hint: "[problem description or guidance]"
+---
+
 Structured reasoning framework for solving hard problems. Uses hypothesis-driven elimination with iterative verification.
 
 Arguments: $ARGUMENTS
@@ -11,6 +17,8 @@ $ARGUMENTS contains the problem description + optional user guidance. Parse for:
 - If no arguments, infer the problem from conversation context (recent errors, stuck points, user's last question). Do NOT ask — just frame your best understanding and let user correct in audit.
 
 ## Step 1: Frame the problem
+
+**Prior knowledge scan** (before framing): grep `learnings/` for error keywords / domain terms from the problem. Check Resource Map Learnings table for relevant files. Also grep project KNOWLEDGE.md for the error pattern. Record any hits in `## Known Evidence` below.
 
 Create a deduce file at `{project}/resources/deduce_{short_name}.md` (or `claude_code_scratch_pad/deduce_{short_name}.md` if no project). Index it in KNOWLEDGE.md.
 
@@ -47,6 +55,15 @@ Write the initial frame:
 ```
 
 ## Step 2: Build hypotheses + plan
+
+**Axis audit** (mandatory when >=2 hypotheses eliminated OR investigation >1 day):
+Before adding more micro-hypotheses, list the full variable space:
+
+| Variable | Current value | Varied? | Vary next? |
+|----------|--------------|---------|------------|
+| (e.g. model version, config setting, data source, environment, library version...) | | | |
+
+Prioritize NOT-varied macro variables over new micro-hypotheses.
 
 List all plausible hypotheses. For each one, define:
 - Verification method (specific commands or steps)

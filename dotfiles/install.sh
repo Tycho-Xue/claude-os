@@ -104,13 +104,13 @@ mkdir -p "$HOME/.claude"
 # CLAUDE.md (global instructions)
 link "$REPO/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
 
-# Slash commands
-mkdir -p "$HOME/.claude/commands"
-for cmd in "$REPO/claude-code/commands/"*.md; do
-    [ -f "$cmd" ] || continue
-    name="$(basename "$cmd")"
-    link "$cmd" "$HOME/.claude/commands/$name"
-done
+# Slash commands — directory-level symlink (auto-picks up new commands without rerunning install)
+if [ -d "$HOME/.claude/commands" ] && [ ! -L "$HOME/.claude/commands" ]; then
+    echo "  Cleaning up old per-file symlink directory $HOME/.claude/commands"
+    rm -rf "$HOME/.claude/commands"
+fi
+ln -sfn "$REPO/claude-code/commands" "$HOME/.claude/commands"
+echo "  ✓ ~/.claude/commands → $REPO/claude-code/commands"
 
 # Statusline
 link "$REPO/claude-code/statusline.sh" "$HOME/.claude/statusline.sh"

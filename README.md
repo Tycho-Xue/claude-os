@@ -1,4 +1,4 @@
-# Le's Claude OS v2.3
+# Le's Claude OS v2.5
 
 A persistent knowledge and workflow system for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). It gives Claude long-term memory across sessions, structured project management, and automatic state sync across machines.
 
@@ -15,7 +15,7 @@ Claude Code starts every session with zero context. You re-explain your project,
 - **Custom statusline** — Context usage bar, model info, cost tracking, OS version
 - **Slash commands** — `/handoff`, `/reload`, `/deduce`, `/refactor`, `/connect`, `/check`
 - **Knowledge quality** — Tag system (`[fact]`/`[observation]`/`[inference]`) with graduation reviews to prevent wrong conclusions from persisting
-- **Branching context** — Parallel sessions on the same project with independent context and clean merge
+- **Parallel sessions** — Multiple sessions on the same project with independent task sections and clean lifecycle
 
 ## Quick Start
 
@@ -79,7 +79,7 @@ claude_config/
 
 | File | Purpose | Loading | Write Pattern |
 |------|---------|---------|---------------|
-| `CONTEXT.md` | Current status + next steps (supports branching for parallel sessions) | Always read in full | Overwrite each handoff |
+| `CONTEXT.md` | Current status + next steps (supports task sections for parallel sessions) | Always read in full | Overwrite each handoff |
 | `KNOWLEDGE.md` | Project knowledge, gotchas, commands | Section-loaded on demand | Append new, archive old |
 | `RECORDS.md` | Results, milestones, failure analysis | Grep headers, read on demand | Append only, never compress |
 
