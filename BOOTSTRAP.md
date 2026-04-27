@@ -1,10 +1,12 @@
 # Bootstrap Prompt
 
-Copy everything below the line and paste it into a new Claude Code session. It will fork the repo, install everything, and walk you through setup.
+Copy everything below the line and paste it into a new Claude Code session. It will clone the repo, install everything, and walk you through setup.
 
 ---
 
-I want you to set up "Le's Claude OS v2.5" — a persistent knowledge and workflow system that gives you long-term memory, structured project management, and multi-machine sync. Source repo: https://github.com/Tycho-Xue/claude-os
+I want you to set up "Claude OS v2.5" — an operating system for AI coding agents. It turns Claude Code from a stateless tool into a stateful, self-correcting work environment with persistent project knowledge, multi-machine sync, and knowledge quality controls. Source repo: https://github.com/Tycho-Xue/claude-os
+
+> For background on what this is and why, read `INTRODUCTION.md` in the repo after cloning.
 
 ## Step 1: Install
 
@@ -57,63 +59,33 @@ Open `~/claude_config/CLAUDE.md` and replace `{{placeholder}}` values. **All of 
 
 ## Step 4: Overview
 
-After setup, give a concise overview of:
+After setup, give a concise overview. Keep it brief — the user can explore details later. Cover:
 
-### 1. How It Works
-- **Three-file system**: CONTEXT.md (current state, overwritten each handoff), KNOWLEDGE.md (project knowledge, section-loaded), RECORDS.md (cold storage, append-only)
-- **Section loading**: Files use `## ` headers; Claude greps headers and reads only what's needed (saves 50-80% context)
-- **Handoff/reload cycle**: say "handoff" or `/handoff` to save state → `/reload` to restore next session
+### How It Works (the essentials)
+- **The OS analogy**: CLAUDE.md is the kernel (always loaded, defines all behavior). Project files are user space. Slash commands are syscalls. Git is the network stack.
+- **Three-file system** per project: CONTEXT.md (current state — hot, always loaded), KNOWLEDGE.md (project knowledge — warm, section-loaded on demand), RECORDS.md (historical data — cold, grep on demand)
+- **Handoff/reload cycle**: say "handoff" or `/handoff` to save state → `/reload` to restore next session. Context usage ≥70% → statusline turns red, Claude reminds you to handoff
 - **Git-based sync**: SessionEnd hook auto-commits and pushes; session start pulls latest
+- **Knowledge quality**: every piece of knowledge is tagged `[fact]`, `[observation]`, or `[inference]` — only verified knowledge enters long-term storage
 
-### 2. Key Commands
-- `/handoff` — save all project state + git sync
-- `/reload` or `/reload <project>` — restore context from files
-- Context usage ≥70% → statusline turns red, Claude reminds you to handoff
+### Key Commands
+| Command | What it does |
+|---------|-------------|
+| `/handoff` | Save all project state + git sync |
+| `/reload` or `/reload <project>` | Restore context from files |
+| `/deduce <problem>` | Structured hypothesis-driven debugging |
+| `/refactor` | Audit and clean OS/project files |
+| `/check` | Health check on the installation |
 
-### 3. What Was Installed
+### What Was Installed
 Summarize based on the actual install output:
-- **Terminal detected**: which one, and whether Ghostty config was auto-installed or keybindings need manual setup
-- **Shell configs**: zsh (10K shared history, case-insensitive completion, zoxide/yazi/starship/conda integration), bash, tmux (Ctrl+A prefix, mouse scrolling, dark status bar with green highlights, auto-unsets Claude tokens for security), vim (dark, 4-space tabs)
-- **Claude Code**: auto-approved read-only tools (Read, Glob, Grep, git status/diff/log, ls, cat, head, tail, wc, pwd, echo, which), SessionEnd git sync hook, statusline with context usage bar (green→yellow→red at 70%) + model + cost + OS version
+- **Terminal detected**: which one, and whether config was auto-installed or keybindings need manual setup
+- **Shell configs**: zsh, bash, tmux (Ctrl+A prefix), vim — symlinked on Mac, embedded on VMs
+- **Claude Code**: auto-approved read-only tools, SessionEnd git sync hook, statusline with context usage bar (green → yellow → red at 70%)
 
-### 4. Default Preferences (and why)
-
-**Behavioral:**
-| Preference | Why |
-|-----------|-----|
-| Just do it, don't just give instructions | You're using an agent, not a chatbot |
-| Don't summarize after every response | Saves tokens, you can read the diff |
-| Plan before non-trivial tasks (3+ steps) | Prevents rushing into dead ends |
-| STOP when complexity grows mid-task | The #1 failure mode — pushing through instead of stepping back |
-| Verify before reporting done | Prevents false "done!" without checking |
-| Write corrections to learnings immediately | No repeated mistakes across sessions |
-| Use subagents for complex tasks | Keeps main context clean |
-
-**Coding:**
-| Preference | Why |
-|-----------|-----|
-| Simplicity > abstraction | Over-engineering is the default failure mode |
-| Clean, runnable, iterable | Ship working code first |
-| Descriptive variable names | No `x`, `y`, `tmp` |
-| Comment input/output shapes | Critical for data work, useful everywhere |
-
-**Protocol:**
-| Preference | Why |
-|-----------|-----|
-| Read before writing | No blind edits to code you haven't seen |
-| Scratch pad for temp code | `claude_code_scratch_pad/` keeps experiments out of your project |
-| Long commands to clipboard | `echo '...' \| pbcopy` — easier than copying from terminal |
-
-### 5. What to Customize
-- Add language-specific coding rules for your stack
-- Create your first project: `mkdir -p ~/claude_config/projects/<name>`
-- Add your dotfiles or modify the existing ones
-- Learnings and pipelines will grow organically as you work
-
-### 6. Best Practices
-- **Handoff** when context usage hits ~70% or when switching tasks
-- **One project = one directory** under `projects/` with its own CONTEXT/KNOWLEDGE/RECORDS
-- Claude auto-writes to knowledge files when it learns something reusable — let it
-- Use `learnings/` for cross-project insights (e.g., "PyTorch pitfalls")
-- Use `pipelines/` for repeatable multi-step workflows
-- RECORDS.md is for cold data — write failures and decisions there, not just successes
+### Quick Start
+1. Fill in a few `{{placeholders}}` in CLAUDE.md (at minimum: your name)
+2. Create your first project: `mkdir -p ~/claude_config/projects/my-project`
+3. Start working — Claude will create CONTEXT.md and KNOWLEDGE.md as you go
+4. Say "handoff" when you're done. Next session: `/reload my-project`
+5. Learnings, pipelines, and feedback will grow organically as you use the system
