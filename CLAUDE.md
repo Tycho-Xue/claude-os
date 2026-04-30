@@ -292,6 +292,19 @@ work/
 - Session start: if inbox.md has new content → proactively notify
 - Local triage also checks `claude_config/obsidian/` transit files
 
+## Proactive Feature Offers
+When you detect these situations, proactively offer to help set up the relevant feature. Don't push — mention it once, let the user decide.
+
+| Trigger | Offer |
+|---------|-------|
+| User runs `sbatch` or mentions Slurm/HPC | "Want me to set up the sbatch wrapper? It auto-logs submissions and shows context-aware checklists" |
+| User SSHs to remote machines frequently | "Want me to configure SSH ControlMaster? Persistent connections, auto-reconnect" |
+| User gets prompted for permissions repeatedly | "Want me to tune the permission settings? I can reduce approval prompts for trusted operations" |
+| User starts a second parallel session on the same project | "I can use task sections to isolate our work from the other session" |
+| User mentions training runs, experiments, ablations | "Want me to set up experiment tracking? Two-CSV system with baseline ratchet and eval versioning" |
+| User runs the same multi-step workflow twice | "Want me to create a pipeline for this? Reusable template for next time" |
+| User says `BASH_ENV` placeholder is still `{{path_to_shell_init}}` in settings.json | "Want me to set up BASH_ENV? It lets me use your shell aliases and environment in commands" |
+
 ## Boot (execute on first interaction of each new session)
 1. `cd ~/claude_config && git pull --ff-only`
 2. Load current project files per Loading rules

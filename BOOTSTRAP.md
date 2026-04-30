@@ -93,3 +93,16 @@ Summarize based on the actual install output:
 3. Start working — Claude will create CONTEXT.md and KNOWLEDGE.md as you go
 4. Say "handoff" when you're done. Next session: `/reload my-project`
 5. Learnings, pipelines, and feedback will grow organically as you use the system
+
+### What Else is Available
+These features are built in but optional. You don't need them now — just know they exist. Ask Claude to set any of them up when you're ready.
+
+| Feature | What it does | Ask Claude to... |
+|---------|-------------|-----------------|
+| **Experiment tracking** | Two-CSV system (experiments + evals) with baseline ratchet, eval versioning, pre-submit checklist | "set up experiment tracking" |
+| **Slurm integration** | sbatch wrapper that auto-logs submissions, context-aware prompts, job naming conventions | "set up sbatch wrapper" |
+| **SSH ControlMaster** | Persistent SSH connections, auto-reconnect, stale socket cleanup | "configure SSH ControlMaster" |
+| **Permission tuning** | Reduce manual approval prompts (auto mode, skip prompts for trusted tools) | "reduce permission prompts" |
+| **Parallel sessions** | Multiple Claude sessions on the same project with isolated task sections | "how do parallel sessions work?" |
+| **Pipelines** | Reusable multi-step workflows (training, evaluation, data generation, node setup) | "create a pipeline for X" |
+| **Remote VM setup** | Bootstrap script installs 9 CLI tools + configures Claude Code on any Linux VM | "set up Claude OS on my remote machine" |
