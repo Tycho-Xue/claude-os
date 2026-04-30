@@ -30,6 +30,9 @@
       }
     ]
   },
+  "env": {
+    "BASH_ENV": "{{path_to_shell_init}}"
+  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh"

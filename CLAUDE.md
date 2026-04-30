@@ -113,6 +113,25 @@
 - Put info in the right place: version changes → CHANGELOG, results → RECORDS
 - Push claude_config changes immediately after modifying, don't wait for session end
 - RECORDS.md is easy to forget. When completing a task, solving a non-trivial problem, or making an architecture decision — must write RECORDS, not just KNOWLEDGE
+**Training Ops** (optional — for ML training on Slurm clusters)
+- **Experiment tracking uses two CSVs**: `resources/experiments.csv` (training runs) + `resources/evals.csv` (eval results). All reads/writes via pandas — don't use Read tool to load full CSV (wastes context), don't use Edit tool on CSV (corruption risk)
+- **experiments.csv**: one row per training run. Append on submit (all frozen fields + intent). Status lifecycle: `SUBMITTED → TRAINING → DONE → DECIDED` (or `FAILED / CANCELLED`). Status is the single source of truth for experiment state
+- **evals.csv**: one row per eval job, append-only (never edit old rows). Re-eval = new row, failed eval = new row (status=FAILED). Links to experiments.csv via `train_job` column
+- **Baseline ratchet**: CSV header comments maintain current best valid eval scores per model. On eval completion, compare per-metric vs baseline — regression must be flagged in notes
+- **eval_tag**: bump when eval pipeline has a breaking fix (v0→v1→v2...). Only compare scores with the same eval_tag
+- **Pre-submit checklist**: diff submit_cmd vs most recent DONE run of the same model; verify wandb_name is unique; if building on a prior run, check its CSV row first
+- **Eval sanity gate**: if any metric < 0.1, mark EVAL FAILED + note=pipeline failure, don't treat as real result
+- **wandb tags lifecycle**: new run → `tags=["active"]`. Completed → `["completed"]`. After eval decision → `["valid"]` / `["invalid"]` / `["wrong-axis"]`. Failed → `["failed"]`. Workspace default filter: `tag = valid`
+- **wandb name contract**: unique + descriptive — every varied axis must be tagged in the name. Pre-launch: echo the name and verify all differing axes are represented
+- **sbatch wrapper**: shell function that auto-logs every submission to `{{shared_storage}}/experiments_submit.log`. Captures manual + Claude submissions. On eval submit, show checklist; on training submit, show CSV reminder
+- **Slurm `--time` should be generous**: start at 24h, give 2x buffer over expected wall-time. Jobs killed by time limit can't be recovered
+- **Slurm job names must be descriptive**: `{model}-{variant}-{tag}-{iter}` format (e.g., `qwen35-9b-styleON-3k`). When referencing jobs, always use `name (job NNNN)` format, not bare job IDs
+- **Large files must go to shared storage**, not home directory. Always `df -h` first. Checkpoints, datasets, conda envs → shared filesystem
+### Slurm Environment (optional — for HPC/Slurm users)
+- Persistent storage on shared filesystem (e.g., `/fsx`, `/scratch`). All nodes share it
+- Grab interactive node: `sbatch --exclusive --time=0 --wrap='sleep infinity'` (survives disconnects, unlike salloc)
+- Specify GPU type explicitly: `--gres=gpu:{{gpu_type}}:8`, not just `--gres=gpu:8`
+- Set default partition via env var (`SBATCH_PARTITION`) in shell init, override per-job with `#SBATCH --partition=`
 
 ## Protocol
 ### Loading (hot data: read all; cold data: on-demand)
