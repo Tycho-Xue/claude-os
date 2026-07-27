@@ -117,6 +117,9 @@ For each hypothesis (by priority order):
 - If 3 consecutive hypotheses all eliminated with no new leads → pause and re-frame the problem with user
 - If a verification step requires a destructive/risky action → pause and ask
 - If root cause found → stop autopilot, present Resolution for user confirmation
+- **Hard iteration cap: 12 verifications per autopilot run** (count every hypothesis tested, including re-tests and newly minted ones). On hitting the cap → stop, write current state to the deduce file, present a summary. User can say "continue" to grant another 12
+- **Hypothesis table cap: 10 rows**. Before adding an 11th, run the axis audit and merge/generalize existing rows — new leads do not reset the caps, they compete for slots
+- **Context guard**: if context usage ≥ 70%, stop autopilot, write state to the deduce file, and suggest handoff — never run the context to exhaustion on autopilot
 
 ## Step 5: Resolution
 

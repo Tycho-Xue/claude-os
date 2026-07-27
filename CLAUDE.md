@@ -135,7 +135,7 @@
 
 ## Protocol
 ### Loading (hot data: read all; cold data: on-demand)
-1. **Project work**: Read project `CONTEXT.md` + `KNOWLEDGE.md` in full; if KNOWLEDGE has `## Parent:` section, read parent's KNOWLEDGE.md first
+1. **Project work**: Read project `CONTEXT.md` in full. For `KNOWLEDGE.md`, list headers first (`grep -n "^## " KNOWLEDGE.md`) and read only sections relevant to the current task (section-precise reading — see File Contracts); read it in full only if it's small (<150 lines). If KNOWLEDGE has a `## Parent:` section, load the parent's KNOWLEDGE.md the same way first
 2. **Technical questions**: Read relevant `learnings/` files on demand (don't preload). Trigger: check Resource Map Learnings table to identify which file is relevant, then read or grep it
 3. **Repeated tasks**: Read the specific `pipelines/` pipeline in full
 4. **Historical data**: `RECORDS.md` on-demand — Grep `^## ` for headers → read relevant section
@@ -191,10 +191,10 @@
 - Primary machine: `~/claude_config/`; Remote machines: `~/claude_config/` + symlink
 - **Session start**: `cd ~/claude_config && git pull --ff-only`
 - **When claude_config files are modified**: immediately `git add -A && git commit && git push` (don't wait for session end — ensures other machines can use the changes)
-- **Session end**: hook runs `git fetch origin && git rebase origin/main`, then `git add -A && git commit && git push` (background)
+- **Session end**: hook commits local changes first, then `git fetch origin && git rebase origin/main` (aborting the rebase on conflict rather than leaving the repo mid-rebase), then `git push` (background). If the push fails, the commit stays local — resolve on next session
 - **Why rebase**: when working on multiple machines in parallel, without rebase you'll overwrite another machine's updates with stale files
-- **Conflicts**: `git fetch origin && git reset --hard origin/main`
-- **settings.json**: Each machine has its own `~/.claude/settings.json`, not in the repo. Changing hook logic requires **updating each machine separately**
+- **Conflicts**: preserve local work first (`git branch rescue-$(date +%m%d-%H%M)`), then `git fetch origin && git reset --hard origin/main`. Never discard unpushed commits without a rescue branch
+- **settings.json**: `install.sh` symlinks `~/.claude/settings.json` to the repo copy, so hook changes sync to every machine via git. If a machine needs different settings, remove the symlink there and maintain a standalone `~/.claude/settings.json` on that machine
 ### Handoff
 - User says "handoff", "save", "switch", etc. → execute handoff protocol
 - Also available via `/handoff` slash command; restore with `/reload` or `/reload <project-name>`
