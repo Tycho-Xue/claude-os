@@ -24,7 +24,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "(cd ~/claude_config && git fetch origin && git rebase origin/main && git add -A && git diff --cached --quiet || git commit -m \"auto-sync $(date +%Y-%m-%d-%H%M)\" && git push 2>/dev/null) &"
+            "command": "(cd ~/claude_config || exit 0; git rebase --abort; git add -A; git diff --cached --quiet || git commit -m \"auto-sync $(date +%Y-%m-%d-%H%M)\"; git fetch origin || exit 0; git rebase origin/main || { git rebase --abort; exit 0; }; git push) >/dev/null 2>&1 &"
           }
         ]
       }

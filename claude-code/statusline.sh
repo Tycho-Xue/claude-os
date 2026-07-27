@@ -3,6 +3,8 @@ input=$(cat)
 
 MODEL=$(echo "$input" | jq -r '.model.display_name // "unknown"')
 PCT=$(echo "$input" | jq -r '.context_window.used_percentage // 0' | cut -d. -f1)
+case "$PCT" in ''|*[!0-9]*) PCT=0 ;; esac
+[ "$PCT" -gt 100 ] && PCT=100
 COST=$(echo "$input" | jq -r '.cost.total_cost_usd // 0')
 
 # Detect OS version from CLAUDE.md (first line)
@@ -16,7 +18,6 @@ fi
 
 # Progress bar (20 chars wide)
 FILLED=$((PCT / 5))
-EMPTY=$((20 - FILLED))
 if [ "$PCT" -ge 70 ]; then
   COLOR="\033[31m"  # red when >= 70%
 elif [ "$PCT" -ge 50 ]; then
@@ -25,6 +26,9 @@ else
   COLOR="\033[32m"  # green
 fi
 RESET="\033[0m"
-BAR=$(printf '▓%.0s' $(seq 1 $FILLED 2>/dev/null))$(printf '░%.0s' $(seq 1 $EMPTY 2>/dev/null))
+# BSD seq counts down when last < first (seq 1 0 → "1 0"), so build the bar with a loop
+BAR=""
+for ((i = 0; i < FILLED; i++)); do BAR+="▓"; done
+for ((i = FILLED; i < 20; i++)); do BAR+="░"; done
 
 printf "${COLOR}${BAR}${RESET} %s%% | %s | \$%.2f | %s" "$PCT" "$MODEL" "$COST" "$OS_VERSION"
